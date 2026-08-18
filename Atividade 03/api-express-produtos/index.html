@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Teste da API de Produtos</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; max-width: 600px; }
+    h2 { border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+    .form-group { margin-bottom: 10px; }
+    label { display: inline-block; width: 80px; }
+    input { padding: 5px; margin-right: 10px; }
+    button { padding: 5px 15px; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { background: #f4f4f4; margin: 5px 0; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+  </style>
+</head>
+<body>
+
+  <h2>Cadastrar Produto (POST)</h2>
+  <div class="form-group">
+    <label for="name">Nome:</label>
+    <input type="text" id="name" placeholder="Ex: Monitor">
+    <label for="price">Preço:</label>
+    <input type="number" id="price" placeholder="Ex: 500">
+    <button onclick="addProduct()">Adicionar</button>
+  </div>
+
+  <h2>Lista de Produtos (GET)</h2>
+  <button onclick="fetchProducts()">Atualizar Lista</button>
+  <ul id="product-list"></ul>
+
+  <script>
+    const API_URL = 'http://localhost:3000/product';
+
+    // 1. Buscar produtos (GET)
+    async function fetchProducts() {
+      try {
+        const res = await fetch(API_URL);
+        const products = await res.json();
+        
+        const list = document.getElementById('product-list');
+        list.innerHTML = '';
+
+        products.forEach(p => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <span><strong>#${p.id}</strong> - ${p.name} (R$ ${p.price})</span>
+            <button onclick="deleteProduct(${p.id})">Deletar</button>
+          `;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        alert('Erro ao carregar produtos. Verifique se o servidor Node está rodando.');
+      }
+    }
+
+    // 2. Criar produto (POST)
+    async function addProduct() {
+      const name = document.getElementById('name').value;
+      const price = document.getElementById('price').value;
+
+      if (!name || !price) return alert('Preencha nome e preço!');
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, price: Number(price) })
+        });
+
+        document.getElementById('name').value = '';
+        document.getElementById('price').value = '';
+        fetchProducts();
+      } catch (err) {
+        alert('Erro ao adicionar produto.');
+      }
+    }
+
+    // 3. Deletar produto (DELETE)
+    async function deleteProduct(id) {
+      try {
+        await fetch(`${API_URL}?id=${id}`, { method: 'DELETE' });
+        fetchProducts();
+      } catch (err) {
+        alert('Erro ao deletar produto.');
+      }
+    }
+
+    // Carrega a lista ao abrir a página
+    fetchProducts();
+  </script>
+</body>
+</html>
