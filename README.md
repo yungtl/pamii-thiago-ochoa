@@ -1,2 +1,2 @@
-# pamii-sara-coni
+# pamii-thiago-ochoa
 Programação de aplicativos mobile II
